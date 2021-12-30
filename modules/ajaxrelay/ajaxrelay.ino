@@ -1,4 +1,4 @@
-
+// this is for a relay controlled through ajax
 // Import required libraries
 #include "ESP8266WiFi.h"
 #include "ESPAsyncWebServer.h"
