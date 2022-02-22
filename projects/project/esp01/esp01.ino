@@ -3,8 +3,8 @@
 #include <PubSubClient.h>
 
 //Update these with values suitable for your network.
-const char* ssid = "Blink-Speed";
-const char* password = "12mt61r11";
+const char* ssid = "";
+const char* password = "";
 const char* mqtt_server = "192.168.43.132";
 int main;
 WiFiClient espClient;

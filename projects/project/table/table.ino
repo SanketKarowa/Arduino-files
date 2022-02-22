@@ -90,6 +90,18 @@ else if(adc >= 672 && adc <=678)
      v =10.5 ;
 else if(adc >= 666 && adc <=671)
      v =10.4  ;
+else if(adc >= 666 && adc <=671)
+     v =10.3  ;
+else if(adc >= 661 && adc <=663)
+     v =10.2  ;
+else if(adc >= 648 && adc <=651)
+     v =10.0  ;
+else if(adc >= 615 && adc <=618)
+     v =9.5  ;
+else if(adc >= 603 && adc <=605)
+     v =9.3  ;   
+else if(adc >= 583 && adc <=585)
+     v =9.0  ;        
 else if(adc > 930){Serial.println("HIGH");}
 else if(adc < 930){Serial.println("LOW");}
 Serial.println(v);

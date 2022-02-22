@@ -1,6 +1,4 @@
-//INITIAL 
-//BATTERY REQUIRED EXTERNALLY
-//#fix for relay anamoly
+//CODE IN USE FOR BOX2
 #include "LiquidCrystal_I2C.h"
 #include "Wire.h"
 #define DS3231_I2C_ADDRESS 0x68
@@ -9,94 +7,90 @@ LiquidCrystal_I2C lcd(0x27, 16, 2);
 
 // Convert normal decimal numbers to binary coded decimal
 byte decToBcd(byte val){
-  return( (val/10*16) + (val%10) );
-}
+     return( (val/10*16) + (val%10) );
+    }
 // Convert binary coded decimal to normal decimal numbers
 byte bcdToDec(byte val){
-  return( (val/16*10) + (val%16) );
-}
-char m;
-int h;
-float v;
-int adc; //adc of the device
+     return( (val/16*10) + (val%16) );
+    }
+int h;    //hour format correction
+float v;  //volts
+int adc;  //adc from device
 
 void setup(){
-     Wire.begin();
-     Serial.begin(9600);
-     pinMode(13,OUTPUT); digitalWrite(13, HIGH);//fix-ROOFER (fixes relay state on reboot) 
-     pinMode(14,OUTPUT);                        //USB (mosfet where HIGH IN ON AND VICE VERSA)
-     pinMode(12,OUTPUT);digitalWrite(12, HIGH); //fix-AUX (fixes relay state on reboot)
-     pinMode(16,OUTPUT);                        //LOAD (mosfet where HIGH IN ON AND VICE VERSA)
-     //pinMode(15,OUTPUT);                      //EXTRAAAA
-     //lcd initializationl
-     lcd.init();
-     lcd.backlight();
-     //------------voltage sensor--------------
-     adc = analogRead(A0);		// read the input
-  
- Serial.println(String("adc") + adc);
-}
+	  Wire.begin();
+	  Serial.begin(9600);
+	  pinMode(12,OUTPUT);//RELAY NO OPTO where HIGH IS ON
+	  pinMode(14,OUTPUT);//USB //mosfet where HIGH IS ON AND VICE VERSA
+	  pinMode(16,OUTPUT);//LOAD//mosfet where HIGH IS ON AND VICE VERSA
+	  //lcd initializationl
+	  lcd.init();
+	  lcd.backlight();
+	  
+	  //------------voltage sensor--------------
+	  adc = analogRead(A0);// read the input
+	  Serial.println(String("adc") + adc);
+    }
 
 void readDS3231time(byte *second,byte *minute,byte *hour,byte *dayOfWeek,byte *dayOfMonth,byte *month,byte *year){
-  Wire.beginTransmission(DS3231_I2C_ADDRESS);
-  Wire.write(0); 		// set DS3231 register pointer to 00h
-  Wire.endTransmission();
-  Wire.requestFrom(DS3231_I2C_ADDRESS, 7);
-  
-  //------request seven bytes of data from DS3231 starting from register 00h----------
-  *second = bcdToDec(Wire.read() & 0x7f);
-  *minute = bcdToDec(Wire.read());
-  *hour = bcdToDec(Wire.read() & 0x3f);
-  *dayOfWeek = bcdToDec(Wire.read());
-  *dayOfMonth = bcdToDec(Wire.read());
-  *month = bcdToDec(Wire.read());
-  *year = bcdToDec(Wire.read());
-}
+	  Wire.beginTransmission(DS3231_I2C_ADDRESS);
+	  Wire.write(0); // set DS3231 register pointer to 00h
+	  Wire.endTransmission();
+	  Wire.requestFrom(DS3231_I2C_ADDRESS, 7);
+	  // request seven bytes of data from DS3231 starting from register 00h
+	  *second = bcdToDec(Wire.read() & 0x7f);
+	  *minute = bcdToDec(Wire.read());
+	  *hour = bcdToDec(Wire.read() & 0x3f);
+	  *dayOfWeek = bcdToDec(Wire.read());
+	  *dayOfMonth = bcdToDec(Wire.read());
+	  *month = bcdToDec(Wire.read());
+	  *year = bcdToDec(Wire.read());
+    }
 
 
 void displayTime(){
-     byte second, minute, hour, dayOfWeek, dayOfMonth, month, year;
-     // retrieve data from DS3231
-     readDS3231time(&second, &minute, &hour, &dayOfWeek, &dayOfMonth, &month, &year);
-     // send it to the serial monitor
-     Serial.print(" Day of week: ");
-     lcd.clear();
-     lcd.setCursor(1,0);
-     // DayOfTheWeek
-     switch(dayOfWeek){
+		byte second, minute, hour, dayOfWeek, dayOfMonth, month, year;
+		// retrieve data from DS3231
+		readDS3231time(&second, &minute, &hour, &dayOfWeek, &dayOfMonth, &month,
+		&year);
+		// send it to the serial monitor
+		Serial.print(" Day of week: ");
+		lcd.clear();
+		lcd.setCursor(1,0);
+		// DayOfTheWeek
+	 switch(dayOfWeek){
 		  case 1:
 			Serial.print("Sunday");lcd.print("Sun");
 			break;
 		  case 2:
 			Serial.print("Monday");lcd.print("Mon");
 			break;
-		 case 3:
+		  case 3:
 			Serial.print("Tuesday");lcd.print("Tue");
 			break;
-		 case 4:
+		  case 4:
 			Serial.print("Wednesday");lcd.print("Wed");
 			break;
-		 case 5:
+		  case 5:
 			Serial.print("Thursday");lcd.print("Thu");
 			break;
-		 case 6:
+		  case 6:
 			Serial.print("Friday");lcd.print("Fri");
 			break;
-		 case 7:
+		  case 7:
 			Serial.print("Saturday");lcd.print("Sat");
 			break;
-        }
-		  
-     // DayOfThemonth
-     Serial.print(" ");
-	 Serial.print(dayOfMonth, DEC);
-     lcd.print(" ");
-	 lcd.print(dayOfMonth, DEC); 
-	 //month
-	 switch(month){
+			}
+	  //DayOfThemonth
+	  Serial.print(" ");
+	  Serial.print(dayOfMonth, DEC);
+	  lcd.print(" ");
+	  lcd.print(dayOfMonth, DEC); 
+	  //month
+	  switch(month){
 		  case 1:
-		    Serial.print("Jan");lcd.print("Jan");
-		    break;
+			Serial.print("Jan");lcd.print("Jan");
+			break;
 		  case 2:
 			Serial.print("Feb");lcd.print("Feb");
 			break;
@@ -130,20 +124,20 @@ void displayTime(){
 		  case 12:
 			Serial.print("Dec");lcd.print("Dec");
 			break;
-		}
-  
-	 // year
-	 Serial.print(" ");
-	 Serial.print(year, DEC);
-	 lcd.print(" ");
-	 lcd.print(2000+ year);
+	  }
+	  
+	  // year
+	  Serial.print(" ");
+	  Serial.print(year, DEC);
+	  lcd.print(" ");
+	  lcd.print(2000+ year);
 
-	 // time clock
-	 lcd.setCursor(4,1);
-	 Serial.print(" ");
-	 Serial.print(hour, DEC);
-	if(hour>12){
-		 h= (hour-12);
+	  // time clock
+	  lcd.setCursor(4,1);
+	  Serial.print(" ");
+	  Serial.print(hour, DEC);
+	 if(hour>12) {
+		 h=(hour-12);
 		 lcd.print(h);
 		 lcd.print(":");
 		}
@@ -157,36 +151,36 @@ void displayTime(){
 		 lcd.print(":");
 		}
 		 
-	  // convert the byte variable to a decimal number when displayed
+	 // convert the byte variable to a decimal number when displayed
 	 Serial.print(":");
-	 if(minute<10){
+	  if(minute<10){
 		 Serial.print("0"); lcd.print("0");
 	    }
-	 Serial.print(minute, DEC);
-	 lcd.print(minute, DEC);
-	 Serial.print(":");
+	  Serial.print(minute, DEC);
+	  lcd.print(minute, DEC);
+	  Serial.print(":");
 	  
-	 if(second<10){
+	  if(second<10){
 		 Serial.print("0");
-	    }
-	 Serial.print(second, DEC);
-	 Serial.println(" ");
-	 lcd.print(" ");
-	  if(hour>=12) {
-		 lcd.print("PM");
 		}
-	 else{
+	  Serial.print(second, DEC);
+	  Serial.println(" ");
+	  lcd.print(" ");
+	  if(hour>=12) {
+		lcd.print("PM");
+		}
+	  else {
 		 lcd.print("AM");
-	    }
-	 lcd.home();delay(1000);
-	}
+		}
+	  lcd.home();
+	  delay(1000);
+    }
 void loop(){
-	  batt_require();
 	  displayTime(); 
 	  table();
-	  roofer();
-	  usb();
+	  voltage();
 	  aux();
+	  usb();
 	  load();
     }
 
@@ -250,7 +244,7 @@ int table(){
 		 v =12.3 ;
 	  else if(adc >= 790 && adc <=795)
 		 v =12.2 ;
-	  else if(adc >= 783 && adc <=789 )
+	  else if(adc >= 783 && adc <=789)
 		 v =12.1 ;
 	  else if(adc >= 777 && adc <=782)
 		 v =12.0 ;
@@ -302,36 +296,43 @@ int table(){
 		 v =15.5  ;
 		else if( adc <=582)
 		 v =0.00  ;      
-	   Serial.print(" ");
-	   Serial.println(String("volts : ")+ v);
-	}
+	  Serial.print(" ");
+	  Serial.println(String("volts : ")+ v);
+    }
 
- void roofer() {
-	  byte second, minute, hour, dayOfWeek, dayOfMonth, month, year;
-	  readDS3231time(&second, &minute, &hour, &dayOfWeek, &dayOfMonth, &month,&year);
-	  Serial.println(String("hour: ")+(hour ));
-	  if((hour>=9) && (hour<=15)){
-		 //relay on for roofer charging
-		 digitalWrite(13, LOW);
+void voltage(){
+     lcd.clear();
+     lcd.setCursor(0,0);
+     lcd.print("volts : ");
+     lcd.print(v);
+     lcd.print("v");
+     delay(1000);
+    }
+	
+void aux(){
+     byte second, minute, hour, dayOfWeek, dayOfMonth, month, year;
+     readDS3231time(&second, &minute, &hour, &dayOfWeek, &dayOfMonth, &month,&year);
+     if((hour >=8) && (hour<=15)){
+		 //relay on for aux charging
+		 digitalWrite(12, HIGH);
 		 lcd.clear();
 		 lcd.setCursor(0,0);
-		 lcd.print("CHG ACTIVE");
-		 Serial.println("CHARGE ACTIVE");
-		 delay(1000);
-	    }
-	   else{
-		  digitalWrite(13, HIGH);
-		  lcd.clear();
-		  lcd.setCursor(0,0);
-		  lcd.print("CHG INACTIVE");
-		  Serial.println("CHARGE INACTIVE");
-		  delay(1000);
-	    }
-	}
+		 lcd.print("BATT CHARGING");
+		 Serial.println("BATT CHARGING ACTIVE");
+		 delay(1000);  
+        }
+     else {
+         digitalWrite(12, LOW);
+         Serial.println("BATT CHARGING INACTIVE");
+         //delay(1000); 
+        }
+    }
 	
  void usb(){
      byte second, minute, hour, dayOfWeek, dayOfMonth, month, year;
-     readDS3231time(&second, &minute, &hour, &dayOfWeek, &dayOfMonth, &month,&year);
+     readDS3231time(&second, &minute, &hour, &dayOfWeek, &dayOfMonth, &month,
+     &year);
+     
      if((hour>=8) && (hour<=16) && (v >= 11)){
           //relay on for USB charging
           digitalWrite(14, HIGH);// MOSFET ON 
@@ -341,6 +342,7 @@ int table(){
           Serial.println("USB ACTIVE");
           delay(1000);
         }    
+		
      else {
 		  digitalWrite(14, LOW);//MOSFET OFF
 		  lcd.clear();
@@ -350,34 +352,12 @@ int table(){
 		  delay(1000);
         }
     }
-	
- void aux(){
+
+ void load(){
      byte second, minute, hour, dayOfWeek, dayOfMonth, month, year;
      readDS3231time(&second, &minute, &hour, &dayOfWeek, &dayOfMonth, &month,
      &year);
-     if((hour >=8) && (hour<=15)){
-			//relay on for aux charging
-			digitalWrite(12, LOW);
-			lcd.clear();
-			lcd.setCursor(0,0);
-			lcd.print("AUX ACTIVE");
-			Serial.println("AUX ACTIVE");
-			delay(1000);  
-		}
-     else {
-		 digitalWrite(12, HIGH);
-		 lcd.clear();
-		 lcd.setCursor(0,0); 
-		 lcd.print("AUX INACTIVE");
-		 Serial.println("AUX INACTIVE");
-		 delay(1000); 
-        }
-    }
-	
-  void load(){
-     byte second, minute, hour, dayOfWeek, dayOfMonth, month, year;
-     readDS3231time(&second, &minute, &hour, &dayOfWeek, &dayOfMonth, &month,
-     &year);
+    
      if((hour >=17) && (hour <=23) || ((hour >=0) && (hour<=5)) && v >=10.5){
 		   //relay on for LOAD
 			digitalWrite(16, HIGH);//MOSFET ON 
@@ -386,72 +366,14 @@ int table(){
 			lcd.print("LOAD ACTIVE");
 			Serial.println("LOAD ACTIVE");
 			delay(1000);  
-       }
-     else {
+		}
+    
+	 else {
 			digitalWrite(16, LOW); //MOSFET OFF
 			lcd.clear();
 			lcd.setCursor(0,0);
 			lcd.print("LOAD INACTIVE");
 			Serial.println("LOAD INACTIVE");
 			delay(1000);
-		  
         }
-  }
- void batt_require(){
-	  adc = analogRead(A0);// read the input 
-	  if(adc<648){
-		  digitalWrite(12 ,HIGH);
-		  //digitalWrite(13 ,HIGH);  
-		  digitalWrite(14 ,LOW);//mos
-		  digitalWrite(16 ,LOW);//mos
-		  //digitalWrite(16 ,HIGH); 
-		  
-		 for(;;){
-			  bool ok;
-			  ok =false;
-			  lcd.clear();
-			  lcd.setCursor(16,0);
-			  lcd.autoscroll();
-			  String N ="PLEASE CONNECT EXTERNAL BATTERY";  
-			  for (int i = 0; i < 31; i++) {
-				  lcd.print(N[i]);
-				  delay(300);
-				}
-			 Serial.println("NO-BATTERY");       
-			 Serial.println("ALL ACTIVES INACTIVE");
-			 adc = analogRead(A0);// read the input 
-			 if(adc >= 648 && adc <=878) {
-			   ok =true;
-			   lcd.clear();
-			   lcd.setCursor(0,0);
-			   lcd.print("BATT CONNECTED");
-			   Serial.println("BATT CONNECTED");
-			   delay(500);
-			 }
-			 
-			 //turn up aux when no external battery is detected
-			 byte second, minute, hour, dayOfWeek, dayOfMonth, month, year;
-			 readDS3231time(&second, &minute, &hour, &dayOfWeek, &dayOfMonth, &month,
-			 &year);
-			 if((hour >=8) && (hour<=15)){
-				 //relay on for aux charging
-				 digitalWrite(12, LOW);
-				 //lcd initialization
-				 lcd.init();
-				 lcd.backlight();
-				 lcd.clear();
-				 lcd.setCursor(0,0);
-				 lcd.print("E-AUX ACTIVE");
-				 Serial.println("E-AUX ACTIVE");
-				 delay(1000);  
-				}
-			 
-			   if(ok == true){
-				 //lcd initialization
-				 lcd.init();
-				 lcd.backlight();
-				 break;  
-				}
-		    }
-	    } 
-	}
+    }
